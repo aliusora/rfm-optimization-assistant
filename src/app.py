@@ -46,11 +46,6 @@ compensation = st.text_area(
 )
 
 if st.button("Optimize!"):
-    """
-    Optimize the recruitment listing when the user clicks the 'Optimize!' button.
-    Creates an RfMOptimization object with the provided inputs, calls generate_optimized_listing,
-    and displays the optimized text for each field that had content.
-    """
     input_fields = [study_title, purpose, pitch, participant_tasks, compensation]
     if not any(field.strip() for field in input_fields):
         st.error("Please enter content in at least one field before optimizing.")
