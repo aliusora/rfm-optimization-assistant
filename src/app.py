@@ -55,25 +55,30 @@ if st.button("Optimize!"):
     if not any(field.strip() for field in input_fields):
         st.error("Please enter content in at least one field before optimizing.")
     else:
-        try:
-            bot = RfMOptimization(
-                study_title=study_title,
-                purpose=purpose,
-                pitch=pitch,
-                participant_tasks=participant_tasks,
-                compensation=compensation
-            )
-            results = bot.generate_optimized_listing()
+        with st.spinner("Optimizing your recruitment listing... please wait."):
+            try:
+                bot = RfMOptimization(
+                    study_title=study_title,
+                    purpose=purpose,
+                    pitch=pitch,
+                    participant_tasks=participant_tasks,
+                    compensation=compensation
+                )
+                results = bot.generate_optimized_listing()
 
-            if results:
-                st.success(f"Optimized {len(results)} field(s) (copy into REDCap):")
+                if results:
+                    st.success(f"Optimized {len(results)} field(s) (copy into REDCap):")
 
-                # Display each optimized field in a text area for easy copying.
-                for field, block in results.items():
-                    st.subheader(field.replace("_", " ").title())
-                    st.text_area(f"{field} - Optimized", block, height=100, key=f"optimized_{field}")
-            else:
-                st.warning("No fields were optimized. Please enter content in at least one field.")
-        except Exception as e:
-            st.error(f"An error occurred during optimization: {str(e)}")
-            st.info("Please check your OpenAI API key is set correctly and try again.")
+                    # Display each optimized field in a text area for easy copying.
+                    for field, block in results.items():
+                        st.subheader(field.replace("_", " ").title())
+                        st.text_area(f"{field} - Optimized", block, height=100, key=f"optimized_{field}")
+
+                    if st.button("Start New Optimization", type="primary"):
+                        st.rerun()
+
+                else:
+                    st.warning("No fields were optimized. Please enter content in at least one field.")
+            except Exception as e:
+                st.error(f"An error occurred during optimization: {str(e)}")
+                st.info("Please check your OpenAI API key is set correctly and try again.")
