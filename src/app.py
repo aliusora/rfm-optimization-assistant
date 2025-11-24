@@ -19,10 +19,24 @@ st.set_page_config(
 st.title("RfM Optimization Assistant")
 
 # Initialize session state for tracking optimization status
+for key in ['study_title', 'purpose', 'pitch', 'participant_tasks', 'compensation']:
+    if key not in st.session_state:
+        st.session_state[key] = ""
+
 if 'optimizing' not in st.session_state:
     st.session_state.optimizing = False
 if 'results' not in st.session_state:
     st.session_state.results = None
+if 'reset_flag' not in st.session_state:
+    st.session_state.reset_flag = False
+
+# Handle reset before creating widgets
+if st.session_state.reset_flag:
+    for key in ['study_title', 'purpose', 'pitch', 'participant_tasks', 'compensation']:
+        st.session_state[key] = ""
+    st.session_state.reset_flag = False
+    st.session_state.results = None
+    st.session_state.optimizing = False
 
 st.header("Paste your REDCap fields below")
 study_title = st.text_area(
@@ -97,13 +111,7 @@ if st.session_state.results:
     
     # Reset button to clear everything
     if st.button("Start New Optimization", type="primary"):
-        # Clear session state
-        st.session_state.results = None
-        st.session_state.optimizing = False
-        # Clear all text area values
-        for key in ['study_title', 'purpose', 'pitch', 'participant_tasks', 'compensation']:
-            if key in st.session_state:
-                del st.session_state[key]
+        st.session_state.reset_flag = True
         st.rerun()
 elif st.session_state.results is not None and not st.session_state.results:
     st.warning("No fields were optimized. Please enter content in at least one field.")
