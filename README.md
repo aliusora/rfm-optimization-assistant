@@ -1,103 +1,79 @@
-# Ali's Research for Me @ UNC Listing Optimization Web Application: Modules and Functions
+# rfm-optimization-assistant: Python Package Overview
 
-This document outlines the main components of my app, which is designed to
-optimize Research for Me (RfM) study listings more efficiently than our previous
-workflow. It explains how each part fits together, making it easier to
-understand, identify reusable modules, and prepare the project for deployment.
+This package helps you optimize research study listings for the Research for Me (RfM) platform. It uses OpenAI's language models to rewrite your study details in clear, plain language. The package includes a Streamlit web app for easy use.
 
 ## Table of Contents
 
 - [Project Structure](#project-structure)
-- [Module Overview: The Puzzle Pieces](#module-overview)
-    - [`connect.py`](#connectpy)
-    - [`assistant.py`](#assistantpy)
-    - [`__init__.py`](#initpy)
-    - [`app.py`](#apppy)
-- [How the Pieces Fit Together](#how-the-pieces-fit-together)
+- [Main Components](#main-components)
+- [How It Works](#how-it-works)
 - [References](#references)
 
 ```mermaid
 flowchart TD
-    subgraph GeAI.Recruitment Package
-        direction LR
-        K[**__init__.py**<br>*exposes connect_openai & RfMOptimization*]
-        L[**connect.py**<br>*handles API connections*]
-        M[**assistant.py**<br>*contains RfMOptimization class*]
-        N[**app.py**<br>*Streamlit web interface*]
-    end
+    direction LR
+    User([User])
+    App["Streamlit App (app.py)"]
+    Optimizer["RfMOptimization (assistant.py)"]
+    OpenAI["OpenAI API"]
+    Output["Optimized Listing"]
 
-    N -. imports .-> M
-    M -. imports .-> L
-    K -. exposes .-> L
-    K -. exposes .-> M
-    L -- connects to --> O[**OpenAI GPT-4.1**]
+    User -- enters details --> App
+    App -- sends fields --> Optimizer
+    Optimizer -- API call --> OpenAI
+    OpenAI -- optimized text --> Optimizer
+    Optimizer -- results --> App
+    App -- displays --> Output
 ```
 
 ## Project Structure
 
-My app is organized as a Python package called `GeAI.Recruitment`, with the
-following key files:
+The package has these main files:
 
-- `__init__.py`: Defines the package's API, classes, and version.
-- `connect.py`: Handles connecting to OpenAI's generative pre-trained
-    transformer (GPT-*n* series) and checking model availability.
-- `assistant.py`: Contains the `RfMOptimization` class for optimizing
-    recruitment listings.
-- `app.py`: Contains the frontend Streamlit web application for user interaction
-    and displaying results.
+- `app.py`: The Streamlit web app. Users enter study details and get optimized text.
+- `assistant.py`: Defines the `RfMOptimization` class. Handles text optimization for each field.
+- `connect.py`: Checks OpenAI API connection and model availability.
+- `__init__.py`: Exports key functions and classes for easy import.
 
-## Module Overview
+## Main Components
 
 ### `connect.py`
 
-- Functions: `connect_openai(model, version)`
-    - Connects to OpenAI via an API, checks if a GPT model is available, and
-        returns connection information.
-    - Handles API key management securely and checks for error conditions.
+- Function: `connect_openai(model, version)`
+    - Checks if the OpenAI API key is set and if the model is available.
+    - Returns connection info or raises an error if not connected.
 
 ### `assistant.py`
 
 - Class: `RfMOptimization`
     - Attributes:
-        - `studytitle`, `purpose`, `pitch`, `participant_tasks`, `compensation`
+        - `study_title`, `purpose`, `pitch`, `participant_tasks`, `compensation`
     - Methods:
-        - `__init__`: Initializes the class with study details and connects to
-            OpenAI.
-        - `optimize(text, field_type)`: Uses AI to rewrite text for a specific
-            field (e.g., study title, study purpose) to improve engagement.
-        - `generate_optimized_listing()`: Optimizes all non-empty fields and
-            returns results as a dictionary.
+        - `__init__`: Sets up the class and checks OpenAI connection.
+        - `optimize(text, field_type)`: Sends text to OpenAI and gets a plain language rewrite.
+        - `generate_optimized_listing()`: Optimizes all fields and returns results as a dictionary.
 
 ### `__init__.py`
 
-- Exposes `connect_openai` and `RfMOptimization` for easy import.
-- Sets the package version and controls what is available when the package is
-    imported with `from GeAI.Recruitment import *`.
+- Makes `connect_openai` and `RfMOptimization` available for import.
+- Sets the package version.
 
 ### `app.py`
 
-- This is the main Streamlit web interface users interact with. It allows users
-    to input study details and get optimized recruitment text.
-- Basic flow:
-    - Collects user input for each field.
-    - On the "Optimize" button click, it creates an `RfMOptimization` object and
-        calls `generate_optimized_listing()`.
-    - Displays the optimized text for each non-empty field.
+- The main web interface. Users paste their study details and click "Optimize!".
+- Calls `RfMOptimization` to process each field.
+- Shows optimized text for each field.
 
-## How the Pieces Fit Together
+## How It Works
 
-- The web app, or what users see, is in `app.py`. It serves as the entry point
-    for users.
-- It uses the `RfMOptimization` class from `assistant.py` to process and
-    optimize text fields the user provides.
-    - This class, in turn, relies on the `connect_openai` function from
-        `connect.py` to interact with OpenAI's API.
-- The `__init__.py` file makes these components easily accessible as part of a
-    unified package called `GeAI.Recruitment`.
+1. The user opens the web app (`app.py`) and enters study details.
+2. When the user clicks "Optimize!", the app creates an `RfMOptimization` object.
+3. The class checks the OpenAI API connection using `connect_openai`.
+4. For each field, the app sends the text to OpenAI and gets a plain language rewrite.
+5. The app displays the optimized text for each field.
 
 ## References
 
-- GeAI GitHub Repository: https://genai.gd.edu.kg/python/
 - OpenAI API Documentation: https://platform.openai.com/docs/api-reference
 - Streamlit Documentation: https://docs.streamlit.io/library
 - Python Packaging Authority: https://packaging.python.org/
