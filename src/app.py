@@ -46,26 +46,31 @@ FIELD_LABELS = {
 
 def _copy_button(text):
     """Render a small copy-to-clipboard button via an HTML component."""
-    safe = json.dumps(text)  # handles newlines, quotes, backslashes
+    safe = json.dumps(text)
     components.html(
-        f"""<button onclick="
-            var ta=document.createElement('textarea');
-            ta.value={safe};
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            this.textContent='Copied!';
-            setTimeout(()=>this.textContent='Copy to clipboard',1500);
-        " style="
-            background:transparent;
-            border:1px solid rgba(128,128,128,0.3);
-            border-radius:6px;
-            padding:4px 14px;
-            font-size:13px;
-            cursor:pointer;
-            color:inherit;
-        ">Copy to clipboard</button>""",
+        f"""
+        <style>
+            button {{
+                background: transparent;
+                border: 1px solid rgba(128,128,128,0.3);
+                border-radius: 6px;
+                padding: 4px 14px;
+                font-size: 13px;
+                cursor: pointer;
+                color: inherit;
+            }}
+        </style>
+        <button id="copybtn">Copy to clipboard</button>
+        <script>
+            var btn = document.getElementById("copybtn");
+            var content = {safe};
+            btn.addEventListener("click", function() {{
+                navigator.clipboard.writeText(content).then(function() {{
+                    btn.textContent = "Copied!";
+                    setTimeout(function() {{ btn.textContent = "Copy to clipboard"; }}, 1500);
+                }});
+            }});
+        </script>""",
         height=38,
     )
 
