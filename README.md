@@ -26,7 +26,7 @@ flowchart TD
     into five input fields"] --> B["The app checks that at
     least one field has content"]
     B --> C["Empty fields are skipped
-    to save time"]
+    to save time (and API costs)"]
     C --> D["Each field is sent to
     OpenAI with a plain-language prompt"]
     D --> E["The AI response is cleaned
