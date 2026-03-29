@@ -1,8 +1,9 @@
 """
-Module initialization for RfM Optimization tool with OpenAI integration.
+RfM Optimization Assistant — rewrites research study listings
+in plain language using OpenAI.
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 from connect import connect_openai
 from assistant import RfMOptimization
