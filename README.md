@@ -6,7 +6,7 @@ A simple web app that rewrites research study listings in plain language. Paste 
 
 Study teams often write study listings full of clinical terms, long sentences, and what I like to call "grant speak." This makes it hard for everyday people in our communities to understand what a study is about and why they should join.
 
-This web application fixes that. It takes original study text and uses AI to rewrite it in short, friendly, plain language. The result is something study teams can incorporate directly into their study materials. This particular app is designed to support the Research for Me (RfM) study listing optimization process for the Recruitment & Retention (R&R) program at the North Carolina Translational and Clinical Sciences Institute (NC TraCS). However, the code is open source and can be adapted for other use cases.
+This web application fixes that. It takes original study text and uses AI to rewrite it in short, friendly, plain language. The result is something study teams can incorporate directly into their study materials. This particular app is designed to support the Research for Me (RfM) study listing optimization process for the Recruitment & Retention (R&R) program at the North Carolina Translational and Clinical Sciences (NC TraCS) Institute. However, the code is open source and can be adapted for other use cases.
 
 The app rewrites five fields:
 
