@@ -1,120 +1,97 @@
 """
-Streamlit web app for optimizing research recruitment listings using Generative AI.
-Users paste their REDCap fields, click a button, and get clear, easy-to-read text for each section.
+Streamlit web app for the RfM Optimization Assistant.
+Three screens: input → loading → results.
 """
-
-import sys
-import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 import streamlit as st
 from assistant import RfMOptimization
 
-st.set_page_config(
-        page_title="RfM Optimization Assistant",
-        layout="wide"
-)
-
+# --- Page config ---
+st.set_page_config(page_title="RfM Optimization Assistant", layout="wide")
 st.title("RfM Optimization Assistant")
 
-# Initialize session state for tracking optimization status
-for key in ['study_title', 'purpose', 'pitch', 'participant_tasks', 'compensation']:
+# --- Session state defaults ---
+FIELD_KEYS = ["study_title", "purpose", "pitch", "participant_tasks", "compensation"]
+
+for key in FIELD_KEYS:
     if key not in st.session_state:
         st.session_state[key] = ""
 
-if 'optimizing' not in st.session_state:
+if "optimizing" not in st.session_state:
     st.session_state.optimizing = False
-if 'results' not in st.session_state:
+if "results" not in st.session_state:
     st.session_state.results = None
-if 'reset_flag' not in st.session_state:
+if "reset_flag" not in st.session_state:
     st.session_state.reset_flag = False
 
-# Handle reset before creating widgets
+# --- Handle reset before widgets render ---
 if st.session_state.reset_flag:
-    for key in ['study_title', 'purpose', 'pitch', 'participant_tasks', 'compensation']:
+    for key in FIELD_KEYS:
         st.session_state[key] = ""
-    st.session_state.reset_flag = False
     st.session_state.results = None
     st.session_state.optimizing = False
+    st.session_state.reset_flag = False
 
+# --- Field labels (display name → session key) ---
+FIELD_LABELS = {
+    "study_title": "Short Study Title",
+    "purpose": "Study Purpose",
+    "pitch": "Recruitment Pitch",
+    "participant_tasks": "What Will You Ask of the Participant?",
+    "compensation": "Describe Compensation and Incentives",
+}
+
+# ============================================================
+# SCREEN 1: Input
+# ============================================================
 st.header("Paste your REDCap fields below")
-study_title = st.text_area(
-    "Short Study Title",
-    height=100,
-    placeholder="Enter the short study title here",
-    key="study_title"
-)
-purpose = st.text_area(
-    "Study Purpose",
-    height=100,
-    placeholder="Enter the study purpose here",
-    key="purpose"
-)
-pitch = st.text_area(
-    "Recruitment Pitch",
-    height=100,
-    placeholder="Enter the recruitment pitch here",
-    key="pitch"
-)
-participant_tasks = st.text_area(
-    "What will you ask of the participant?",
-    height=100,
-    placeholder="Enter participant tasks here",
-    key="participant_tasks"
-)
-compensation = st.text_area(
-    "Describe compensation and incentives",
-    height=100,
-    placeholder="Enter compensation details here",
-    key="compensation"
-)
 
-# Only show Optimize button if not currently optimizing and no results
+for key, label in FIELD_LABELS.items():
+    st.text_area(label, height=100, key=key)
+
+# --- Optimize button (hidden during processing or when results exist) ---
 if not st.session_state.optimizing and st.session_state.results is None:
     if st.button("Optimize!"):
-        input_fields = [study_title, purpose, pitch, participant_tasks, compensation]
-        if not any(field.strip() for field in input_fields):
+        filled = {k: st.session_state[k] for k in FIELD_KEYS if st.session_state[k].strip()}
+        if not filled:
             st.error("Please enter content in at least one field before optimizing.")
         else:
             st.session_state.optimizing = True
             st.rerun()
 
-# Show spinner and process optimization
+# ============================================================
+# SCREEN 2: Loading
+# ============================================================
 if st.session_state.optimizing:
-    with st.spinner("Optimizing your recruitment listing... please wait."):
+    with st.spinner("Optimizing your listing… this takes a few seconds per field."):
         try:
             bot = RfMOptimization(
-                study_title=study_title,
-                purpose=purpose,
-                pitch=pitch,
-                participant_tasks=participant_tasks,
-                compensation=compensation
+                **{k: st.session_state[k] for k in FIELD_KEYS}
             )
-            st.session_state.results = bot.generate_optimized_listing()
+            st.session_state.results = bot.optimize_all()
             st.session_state.optimizing = False
             st.rerun()
         except Exception as e:
             st.session_state.optimizing = False
-            st.error(f"An error occurred during optimization: {str(e)}")
-            st.info("Please check your OpenAI API key is set correctly and try again.")
             st.session_state.results = None
+            st.error(f"Something went wrong: {e}")
+            st.info(
+                "Check that your OPENAI_API_KEY is set correctly "
+                "and that your account has access to the GPT-4o model."
+            )
 
-# Display results if available
+# ============================================================
+# SCREEN 3: Results
+# ============================================================
 if st.session_state.results:
-    st.success(f"Optimized {len(st.session_state.results)} field(s) (copy into REDCap):")
-    
-    # Display each optimized field in a text area for easy copying.
-    for field, block in st.session_state.results.items():
-        st.subheader(field.replace("_", " ").title())
-        st.text_area(f"{field} - Optimized", block, height=100, key=f"optimized_{field}")
-    
-    # Reset button to clear everything
+    count = len(st.session_state.results)
+    st.success(f"Done! {count} field{'s' if count != 1 else ''} optimized. Copy the text below into REDCap.")
+
+    for key, optimized_text in st.session_state.results.items():
+        label = FIELD_LABELS.get(key, key.replace("_", " ").title())
+        st.subheader(label)
+        st.code(optimized_text, language=None)
+
     if st.button("Start New Optimization", type="primary"):
         st.session_state.reset_flag = True
-        st.rerun()
-elif st.session_state.results is not None and not st.session_state.results:
-    st.warning("No fields were optimized. Please enter content in at least one field.")
-    if st.button("Try Again"):
-        st.session_state.results = None
         st.rerun()
