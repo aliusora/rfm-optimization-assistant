@@ -22,11 +22,17 @@ The app follows a straight line from user input to polished output. Here is what
 
 ```mermaid
 flowchart TD
-    A["Users paste raw study text\ninto five input fields"] --> B["The app checks that at\nleast one field has content"]
-    B --> C["Empty fields are skipped\nto save time"]
-    C --> D["Each field is sent to\nOpenAI with a plain-language prompt"]
-    D --> E["The AI response is cleaned\nup and formatting is stripped"]
-    E --> F["Users see the rewritten text\nin copyable output boxes"]
+    A["Users paste raw study text
+    into five input fields"] --> B["The app checks that at
+    least one field has content"]
+    B --> C["Empty fields are skipped
+    to save time"]
+    C --> D["Each field is sent to
+    OpenAI with a plain-language prompt"]
+    D --> E["The AI response is cleaned
+    up and formatting is stripped"]
+    E --> F["Users see the rewritten text
+    in copyable output boxes"]
 ```
 
 In plain terms:
@@ -44,11 +50,16 @@ Each file in this project has one job. This keeps the code clean and easy to cha
 
 ```mermaid
 flowchart TD
-    APP["<b>app.py</b>\nEverything the user sees and touches"]
-    AST["<b>assistant.py</b>\nBuilds the prompt, calls the API, cleans the response"]
-    CON["<b>connect.py</b>\nChecks the API key and verifies the model"]
-    INI["<b>__init__.py</b>\nWires up imports for the package"]
-    API["<b>OpenAI API</b>\n(External service)"]
+    APP["<b>app.py</b>
+    Everything the user sees and touches"]
+    AST["<b>assistant.py</b>
+    Builds the prompt, calls the API, cleans the response"]
+    CON["<b>connect.py</b>
+    Checks the API key and verifies the model"]
+    INI["<b>__init__.py</b>
+    Wires up imports for the package"]
+    API["<b>OpenAI API</b>
+    (External service)"]
 
     APP -- "passes raw field text" --> AST
     AST -- "uses connection config" --> CON
