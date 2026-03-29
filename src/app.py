@@ -57,7 +57,7 @@ def _copy_button(text):
                 padding: 4px 14px;
                 font-size: 13px;
                 cursor: pointer;
-                color: inherit;
+                color: #FFFFFF;
             }}
         </style>
         <button id="copybtn">Copy to clipboard</button>
