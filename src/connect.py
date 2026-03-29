@@ -1,49 +1,48 @@
 """
-This module functions as a connection verification and model availability
-checker for OpenAI's application programming interface (API).
+Checks the OpenAI API key and verifies the model is available.
 """
 
 import os
 import requests
 
-def connect_openai(model: str = "gpt-4o", version: str = "v1") -> dict[str, str]:
+
+def connect_openai(model="gpt-4o", version="v1"):
     """
-    Test connectivity to OpenAI and check if the chosen model is available.
+    Verify the API key is set and the requested model is available.
 
     Args:
-        model (str): The name of the OpenAI model. Default is "gpt-4o".
-        version (str): The API version to test. Default is "v1".
+        model: Name of the OpenAI model to use.
+        version: API version string.
 
     Returns:
-        dict: Information about the connection, including model, version, and status.
+        dict with provider, model, version, and status.
 
     Raises:
-        ValueError: If the API key is missing or the model is not available.
+        ValueError: If the key is missing or the model is not available.
     """
     api_key = os.getenv("OPENAI_API_KEY")
-    if api_key is None:
-        raise ValueError("OpenAI API key is not set. Please set the OPENAI_API_KEY environment variable.")
+    if not api_key:
+        raise ValueError(
+            "OpenAI API key is not set. "
+            "Run: export OPENAI_API_KEY='your-key-here'"
+        )
 
-    url = f"https://api.openai.com/{version.strip('/')}/models"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    url = f"https://api.openai.com/{version}/models"
+    headers = {"Authorization": f"Bearer {api_key}"}
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=15)
     if response.status_code != 200:
-        raise ValueError(f"Error connecting to OpenAI: {response.text}")
+        raise ValueError(f"Could not connect to OpenAI: {response.text}")
 
-    models_data = response.json()
-    available_models = [m['id'] for m in models_data.get('data', [])]
-
-    if model not in available_models:
-        raise ValueError(f"Model '{model}' is not available. Available models: {available_models}")
+    available = [m["id"] for m in response.json().get("data", [])]
+    if model not in available:
+        raise ValueError(
+            f"Model '{model}' is not available on your account. "
+            f"You may need a paid API plan."
+        )
 
     return {
-        "provider": "OpenAI",
         "model": model,
         "version": version,
         "status": "connected",
-        "api_key_last4": api_key[-4:],
     }
