@@ -3,7 +3,9 @@ Streamlit web app for the RfM Optimization Assistant.
 Three screens: input → loading → results.
 """
 
+import json
 import streamlit as st
+import streamlit.components.v1 as components
 from assistant import RfMOptimization
 
 # --- Page config ---
@@ -40,6 +42,33 @@ FIELD_LABELS = {
     "participant_tasks": "What Will You Ask of the Participant?",
     "compensation": "Describe Compensation and Incentives",
 }
+
+
+def _copy_button(text):
+    """Render a small copy-to-clipboard button via an HTML component."""
+    safe = json.dumps(text)  # handles newlines, quotes, backslashes
+    components.html(
+        f"""<button onclick="
+            var ta=document.createElement('textarea');
+            ta.value={safe};
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            this.textContent='Copied!';
+            setTimeout(()=>this.textContent='Copy to clipboard',1500);
+        " style="
+            background:transparent;
+            border:1px solid rgba(128,128,128,0.3);
+            border-radius:6px;
+            padding:4px 14px;
+            font-size:13px;
+            cursor:pointer;
+            color:inherit;
+        ">Copy to clipboard</button>""",
+        height=38,
+    )
+
 
 # ============================================================
 # SCREEN 1: Input
@@ -81,17 +110,26 @@ if st.session_state.optimizing:
             )
 
 # ============================================================
-# SCREEN 3: Results
+# SCREEN 3: Results (editable + copy button)
 # ============================================================
 if st.session_state.results:
     count = len(st.session_state.results)
-    st.success(f"Done! {count} field{'s' if count != 1 else ''} optimized. Copy the text below into REDCap.")
+    st.success(f"Done! {count} field{'s' if count != 1 else ''} optimized. Edit if needed, then copy into REDCap.")
 
     for key, optimized_text in st.session_state.results.items():
         label = FIELD_LABELS.get(key, key.replace("_", " ").title())
+        result_key = f"result_{key}"
+
+        # Seed each result field once; after that, edits persist.
+        if result_key not in st.session_state:
+            st.session_state[result_key] = optimized_text
+
         st.subheader(label)
-        st.code(optimized_text, language=None)
+        st.text_area("", height=120, key=result_key)
+        _copy_button(st.session_state[result_key])
 
     if st.button("Start New Optimization", type="primary"):
+        for key in st.session_state.results:
+            st.session_state.pop(f"result_{key}", None)
         st.session_state.reset_flag = True
         st.rerun()
